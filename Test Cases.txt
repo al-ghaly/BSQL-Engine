@@ -1,0 +1,75 @@
+1- Logout 
+	- Invalid command (Validate the ReGex)
+	- Not Logged In
+	- Logged in, but not connected to a database
+	- Logged in and connected to a database
+	- After logging out try to create/connect to/disconnect from a database
+
+2- Create a Database
+	- Invalid command (Validate the ReGex)
+	- Not Logged In
+	- Connected to a Database
+	- Duplicate name for the database
+	- Invalid database name
+	- After creating a database try disconnecting from it and then connecting to it/another one
+
+3- Connect to a Database
+	- Invalid command (Validate the ReGex)
+	- Not Logged In
+	- Connected to another Database
+	- Can't find a database with this name
+	- Entered a spaced database name
+	- After connecting try to disconnect and then connect again to the same/different database
+
+4- Disconnect from a database
+	- Invalid command (Validate the ReGex)
+	- Not Logged In
+	- Not Connected to any database
+
+5- Close the app
+	- Invalid command (Validate the ReGex)
+
+6- List Databases
+	- Invalid command (Validate the ReGex)
+	- Not Logged In
+	- Connected to a Database
+
+7- Delete a Database
+	- Invalid command (Validate the ReGex)
+	- Not Logged In
+	- Connected to a Database
+	- Non-existing database
+	- user canceled
+	- user approved
+
+# The above features are completed, integrated, and tested, Try your best to make any of them fail!!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
