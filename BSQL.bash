@@ -6,9 +6,9 @@ Enter your command in the command bar:
 PS: type -commands- for a list of all available commands"
 
 # Set initial value for the username
-username=""
+export username=""
 # Set initial value for the connected database
-database=""
+export database=""
 # The state of the aplication wheather it is active or not
 active=true
 
@@ -25,7 +25,7 @@ register(){
     elif ! grep -E -q '^[a-zA-Z][a-zA-Z0-9]{2,}$' <<< "$1"
     then
         echo "Invalid Username!!"
-    elif ! grep -E -q '^[a-zA-Z0-9]...*$' <<< "$2"
+    elif ! grep -E -q '^[a-zA-Z0-9][^,]{2,}$' <<< "$2"
     then
         echo "Invalid Password!!"
     else
@@ -388,8 +388,15 @@ please use the supported format as descriped in the documentation
 #DELETE USER"
         fi  
     else
-        echo "Unsupported Command!!
-Check The docs od use the command >Commands to show all supported commands"   
+    # It is more likely a Database Command or an Invalid command, lets handle those in a separate file
+        if [ "$database" == "" ]
+        # If the user is inside a database folder: go 2steps back to access the script
+        then
+            . ../DBCommands.bash "$1"  
+        else
+        # Otherwise a single step back is good
+            . ../../DBCommands.bash "$1"  
+        fi    
     fi
 }
 
