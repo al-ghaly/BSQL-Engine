@@ -2,7 +2,8 @@
 
 # Print a Start Up Text to the user
 echo "Application Has Started 
-Enter your command in the command bar or type -commands- for a list of all available commands:"
+Enter your command in the command bar:
+PS: type -commands- for a list of all available commands"
 
 # Set initial value for the username
 username=""
@@ -16,7 +17,38 @@ active=true
     It takes in the username and password and do all the heavy work!
 COMMENT
 register(){
-    echo "name $1 and pass $2"
+    # If the user has already logged in
+    if [ "$username" != "" ]
+    then
+        echo "You are already logged in!!"
+    #Validate the Username & Password using a ReGex
+    elif ! grep -E -q '^[a-zA-Z][a-zA-Z0-9]{2,}$' <<< "$1"
+    then
+        echo "Invalid Username!!"
+    elif ! grep -E -q '^[a-zA-Z0-9]...*$' <<< "$2"
+    then
+        echo "Invalid Password!!"
+    else
+    # All is good so it is (almost) time to register a new user  
+        if [ ! -f "users.csv" ]
+        then
+        # IF the file does not exist, create it and add the new user
+            echo "$1,$2" > users.csv
+        else
+            password=$(sed -n "/^$1,/p" users.csv | cut -d',' -f2)
+            
+            # If the username already exists
+            if [ "$password" != "" ]
+            then
+                echo "The username ($1) is taken!!"
+            else    
+                echo "Regsitering $1 ..."
+                echo "$1,$2" >> users.csv
+                username=$1
+                echo "user: $1 Has been registered and logged into the system"
+            fi    
+        fi
+    fi    
 }
 
 <<COMMENT
@@ -24,8 +56,71 @@ register(){
     It takes in the username and password and do all the heavy work!
 COMMENT
 login(){
-    username=$1
-    echo "name $1 and pass $2"
+    # If the user has already logged in
+    if [ "$username" != "" ]
+    then
+        echo "You are already logged in!!"
+    elif [ ! -f "users.csv" ]
+    then
+    # IF the file does not exist, It means there are no users in the system
+        echo "The username $1 does not exist!!"
+    else
+    # All is good so it is (almost) time to Log in the user  
+        password=$(sed -n "/^$1,/p" users.csv | cut -d',' -f2)
+            
+        # If the username does not exist
+        if [ "$password" = "" ]
+        then
+            echo "The username $1 does not exist!!"
+        elif [ "$password" != "$2" ]
+        then 
+            echo "Wrong Password!!"
+        else    
+            echo "Logging $1 into the system..."
+            username=$1
+        fi
+    fi    
+}
+
+<<COMMENT
+    This function handles the logic behind deleting a user.
+    It takes in the username and do all the work!
+COMMENT
+deleteUser(){
+    # Can't delete a my account without being logged in
+    if [ "$username" = "" ]
+    then
+        echo "You are not logged in!!"
+    # can't find the users data file: How on earth did he log into the system
+    # This is a fatal error that requires the use to let the db admin know!
+    # Because someone has deleted the users.csv file, which leads to a data curruption
+    elif [ ! -f "users.csv" ]
+    then
+        echo "A Fatal Error happened trying to access a sensitive file
+You need to let the database admin know!!"
+    else
+    # Eveything is good and we are ready to delete the user
+        echo "This action can't be reverted are you sure you wanna proceed?!"
+        select option in Yes No
+        do
+            case $option in
+            "Yes")
+                echo "Deleting User: $username ..."
+                # Delete the user's row from the users file
+                sed -i "/^$username,/d" users.csv
+                username=""
+                echo "User is deleted, You are logged out!"
+                break
+                ;;
+            "No")
+                break
+                ;;
+            *)
+                echo "Invalid Option, Operation terminated for data security"
+                break
+            esac              
+        done
+    fi        
 }
 
 <<COMMENT
@@ -261,7 +356,8 @@ Disconnect from $database and try again!"
     #COMMANDS
     #EXIT
   ##DATABASE COMMANDS:
-    #CREATE TABLE"    
+    #CREATE TABLE
+    #DROP TABLE"    
     elif grep -i -E -q '^[ ]*delete[ ]+database[ ]+' <<< "$1" 
     then 
         if [[ ${#arguments[@]} -eq 3 ]]
@@ -274,11 +370,26 @@ Disconnect from $database and try again!"
             echo "Unsupported format for the delete database command,
 please use the supported format as descriped in the documentation
 
-#CONNECT DATABASE >database
+#DELETE DATABASE >database
 Note that the database name can't have any spaces"
         fi  
+    elif grep -i -E -q '^[ ]*delete[ ]+user' <<< "$1" 
+    then 
+        if [[ ${#arguments[@]} -eq 2 ]]
+        # The user have entered 2 arguments as expected
+        then   
+            # try to delete the user 
+            deleteUser
+        else    
+            # In case the user entered too many arguments
+            echo "Unsupported format for the delete user command,
+please use the supported format as descriped in the documentation
+
+#DELETE USER"
+        fi  
     else
-        echo "Unsupported Command!!"   
+        echo "Unsupported Command!!
+Check The docs od use the command >Commands to show all supported commands"   
     fi
 }
 
@@ -291,10 +402,14 @@ then
     # Let him know that this is not gonna happen!
     echo "You are starting fresh!!
 Contact the database administrator in case of any missing data" 
-    # Create a folder to hold the databases
+    # Create A Folder to hold the app data
     mkdir data
 fi
 cd data
+
+##TODO: REMOVE THOSE LINES AS THEY ARE TEMP FOR TEST
+login "ghaly" "12345"  
+connect "DB1"
 
 # Start the application
 while $active
@@ -307,7 +422,6 @@ do
     any default behavior, because the default behavior may vary from
     a Linux version to the other, So I need to keep everything under my control.
 COMMENT
-    # Create A Folder to hold the app data
     IFS= read -p "$username [$database] > " command
     # Parse the command and behave according to it
     parse "$command"

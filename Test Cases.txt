@@ -42,6 +42,35 @@
 	- user canceled
 	- user approved
 
+8- Register a User
+	- Invalid command (Validate the ReGex)
+	- Already Logged In
+	- Invalid username
+	- Invalid Password
+	- The users' file does not exist
+	- Duplicate Username
+	- All good and the user is registered
+
+9- Log In
+	- Invalid command (Validate the ReGex)
+	- Already Logged In
+	- The users' file does not exist
+	- Non-existing Username
+	- Wrong password 
+	- All good and the user is logged in
+
+10- Delete a User
+	- Invalid command (Validate the ReGex)
+	- Not Logged In
+	- Users file does not exist
+	- user canceled
+	- user approved
+
+11- Commands
+	- Invalid command (Validate the ReGex)
+
+12- 
+
 # The above features are completed, integrated, and tested, Try your best to make any of them fail!!
 
 
