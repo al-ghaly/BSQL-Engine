@@ -336,7 +336,7 @@ Note That the database name can only contains letters and numbers, must start wi
             echo "This is a system command that can't be executed while connected to a database.
 Disconnect from $database and try again!"
         else
-        echo "System Databases ..."
+            echo "System Databases ..."
             ls -F | grep / | sed 's/\/$//'
         fi  
     elif grep -i -E -q '^[ ]*commands[ ]*$' <<< "$1"    
@@ -356,8 +356,17 @@ Disconnect from $database and try again!"
     #COMMANDS
     #EXIT
   ##DATABASE COMMANDS:
-    #CREATE TABLE
-    #DROP TABLE"    
+    #CREATE TABLE >table name (column name/data type/constraint,.........)
+    #DROP TABLE >table name
+    #LIST TABLES
+    #TRUNCATE TABLE >table name
+  ##TABLE COMMANDS:
+    #ADD COLUMN >table name, >column name
+    #REMOVE COLUMN >table name, >column name
+    #INSERT
+    #UPDATE
+    #DELETE
+    #SELECT"    
     elif grep -i -E -q '^[ ]*delete[ ]+database[ ]+' <<< "$1" 
     then 
         if [[ ${#arguments[@]} -eq 3 ]]
@@ -390,7 +399,7 @@ please use the supported format as descriped in the documentation
     else
     # It is more likely a Database Command or an Invalid command, lets handle those in a separate file
         if [ "$database" == "" ]
-        # If the user is inside a database folder: go 2steps back to access the script
+        # If the user is inside a database folder: go 2 steps back to access the script
         then
             . ../DBCommands.bash "$1"  
         else

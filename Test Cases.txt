@@ -69,7 +69,45 @@
 11- Commands
 	- Invalid command (Validate the ReGex)
 
-12- 
+12- Create Table
+	- Invalid command (Validate the ReGex)
+	- Not Connected
+	- Duplicate name for the table
+	- Invalid table name
+	- Invalid column name
+	- Invalid data type/constraint
+	- Go on create the file
+
+13- List Tables
+	- Invalid command (Validate the ReGex)
+	- Not Connected to a Database
+	- The database directory contains a directory
+	- All is good
+
+14- Drop Table
+	- Invalid command (Validate the ReGex)
+	- Not Connected to a Database
+	- Non-existing table
+	- user canceled
+	- user approved
+	- All good
+
+15- Truncate Table
+	- Invalid command (Validate the ReGex)
+	- Not Connected to a Database
+	- Non-existing table
+	- user canceled
+	- user approved
+	- All good
+
+16- Drop Column
+	- Invalid command (Validate the ReGex)
+	- Not Connected to a Database
+	- Non-existing table
+	- Non-existing column
+	- user canceled
+	- user approved
+	- All good
 
 # The above features are completed, integrated, and tested, Try your best to make any of them fail!!
 
