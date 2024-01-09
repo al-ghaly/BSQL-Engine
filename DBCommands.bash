@@ -8,10 +8,14 @@ table_name=""
     This function handles the table creation logic.
     It takes in the a table name and columns details and do all the heavy work!
 COMMENT
-create(){
+createTable(){
     columnsNames=""
     types=""
     constraints=""
+    # We will use this variable to count the PKs in the commands to assure a single PK is given at most
+    pks=0
+    # We will use this variable to count the duplications in the columns names to assure a unique name is given for each
+    duplicates=0
     # for each column: in the format of col name/type/constraint
     for var in "$@"
     do
@@ -19,13 +23,37 @@ create(){
         IFS="/" read -a details <<< "$var"
         # Remove any left/right spaces from the columns' names, types, cons
         name=$(echo "${details[0]}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        # Capitalize column names
+        name=$(echo "$name" | tr '[:lower:]' '[:upper:]')
+        # Check of we already have a column with the same name
+        exists=$(echo "$columnsNames" | sed -n -E "/^($name,)|(,$name,)/p")
+        if [ "$exists" != "" ]
+        then    
+            ((duplicates++))
+        fi    
         columnsNames="$columnsNames$name,"
         type=$(echo "${details[1]}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
         types="$types$type,"
         cons=$(echo "${details[2]}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        if grep -i -E -q '^pk*$' <<< "$cons"
+        then    
+            ((pks++))
+        fi    
         constraints="$constraints$cons,"
     done
-    printf "%s\n%s\n%s\n\n" "${columnsNames:0:-1}" "${types:0:-1}" "${constraints:0:-1}" > "$table_name.csv"
+    if ((pks>1))
+    then
+        echo "Multiple Primary Keys are not Supported !!"
+    elif ((duplicates>0))
+    then
+        echo "Each column must have a unique name !!"
+    else    
+        # Convert the types and constraints into lower case
+        types=$(echo "$types" | tr '[:upper:]' '[:lower:]')
+        constraints=$(echo "$constraints" | tr '[:upper:]' '[:lower:]')
+        printf "%s\n%s\n%s\n\n" "${columnsNames:0:-1}" "${types:0:-1}" "${constraints:0:-1}" > "$table_name.csv"
+        echo "table $table_name is created in $database"
+    fi    
 }
 
 <<COMMENT
@@ -48,6 +76,8 @@ parseCreate(){
         IFS="," read -a column <<< "$columns"
         # Trim any left/right spaces from the table name
         table_name=$(echo "$table_name" | sed 's/[[:space:]]*$//')
+        # Capitalize the table name
+        table_name=$(echo "$table_name" | tr '[:lower:]' '[:upper:]')
         # Check that the user is connected to a database
         if [ "$database" == "" ]
         then
@@ -56,7 +86,7 @@ parseCreate(){
         then
             echo "There is already a table named $table_name  !!"     
         else
-            create "${column[@]}"
+            createTable "${column[@]}"
         fi    
     else    
         echo "Could not parse the CREATE TABLE Command
@@ -116,7 +146,9 @@ parseDropC(){
     # Because the ReGex assure we do!
     table_name=$(echo "${arguments[0]}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     column_name=$(echo "${arguments[1]}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-
+    # Capitalize Table Name and column name
+    table_name=$(echo "$table_name" | tr '[:lower:]' '[:upper:]')
+    column_name=$(echo "$column_name" | tr '[:lower:]' '[:upper:]')
     # Check that the user is connected to a database
     if [ "$database" == "" ]
     then
@@ -134,7 +166,9 @@ parseDropC(){
             "Yes")
                 echo "Deleting column: $column_name from $table_name ..."
                 # Delete the column IF EXISTS
-                exists=$(sed -n -E "/^($column_name,)|(,$column_name,)|(,$column_name)$|^($column_name)$/p" "$table_name.csv")
+                header=$(head -n 1 "$table_name.csv")
+                exists=$(echo "$header" | sed -n -E "/^($column_name,)|(,$column_name,)|(,$column_name)$|^($column_name)$/p")
+                echo "$exists"
                 if [ "$exists" == "" ]
                 then
                     echo "There is no column named $column_name in $table_name"
@@ -182,7 +216,8 @@ then
     table_name=$(echo "$1" | sed 's/[ ]*drop[ ]*table[ ]*//I')
     # Trim any left/right spaces from the table name
     table_name=$(echo "$table_name" | sed 's/[[:space:]]*$//')
-
+    # Capitalize Table Name
+    table_name=$(echo "$table_name" | tr '[:lower:]' '[:upper:]')
     # Check that the user is connected to a database
     if [ "$database" == "" ]
     then
@@ -218,7 +253,8 @@ then
     table_name=$(echo "$1" | sed 's/[ ]*truncate[ ]*table[ ]*//I')
     # Trim any left/right spaces from the table name
     table_name=$(echo "$table_name" | sed 's/[[:space:]]*$//')
-
+    # Capitalize Table Name
+    table_name=$(echo "$table_name" | tr '[:lower:]' '[:upper:]')
     # Check that the user is connected to a database
     if [ "$database" == "" ]
     then
@@ -260,9 +296,17 @@ elif grep -i -E -q '^[ ]*list[ ]+tables[ ]*$' <<< "$1"
         fi  
 elif grep -i -E -q '^[ ]*drop[ ]+column[ ]+[^,]+,[^,]+$' <<< "$1"
 then
-    parseDropC "$1"        
+    parseDropC "$1"   
 else
-    echo "Unsupported Command!!
-Check The docs or use the command >Commands to show all supported commands" 
+# It is more likely a table Command or an Invalid command, lets handle those in a separate file
+        if [ "$database" == "" ]
+        # If the user is inside a database folder: go 2 steps back to access the script
+        then
+            . ../DMLCommands.bash "$1"  
+        else
+        # Otherwise a single step back is good
+            . ../../DMLCommands.bash "$1"  
+        fi    
 fi
+
 

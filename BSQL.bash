@@ -155,7 +155,7 @@ connect(){
     This function handles the database creation logic.
     It takes in the a database name and do all the work!
 COMMENT
-create(){
+createDB(){
     # Can't create a database without logging in
     if [ "$username" = "" ]
     then
@@ -181,6 +181,7 @@ create(){
         cd "$1"
         # Update the value of the currently connected database
         database=$1
+        echo "$1 database Created..."
     fi        
 }
 
@@ -211,6 +212,7 @@ Disconnect from $database and try again!"
             "Yes")
                 echo "Deleting $1 ..."
                 rm -r "$1"
+                echo "$1 database Deleted"
                 break
                 ;;
             "No")
@@ -290,7 +292,9 @@ Note That the username and password can't have any spaces"
         # The user have entered 3 arguments as expected
         then   
             # Connect to the database 
-            connect  "${arguments[2]}"
+            DBName="${arguments[2]}"
+            DBName=$(echo "$DBName" | tr '[:lower:]' '[:upper:]')
+            connect "$DBName"
         else    
             # In case the user entered too many arguments
             echo "Unsupported format for the connect command,
@@ -315,7 +319,9 @@ Note that the database name can't have any spaces"
         # The user have entered 3 arguments as expected
         then   
             # Create a database 
-            create  "${arguments[2]}"
+            DBName="${arguments[2]}"
+            DBName=$(echo "$DBName" | tr '[:lower:]' '[:upper:]')
+            createDB "$DBName"
         else    
             # In case the user entered too many arguments
             echo "Unsupported format for the create database command,
@@ -373,7 +379,9 @@ Disconnect from $database and try again!"
         # The user have entered 3 arguments as expected
         then   
             # try to delete the database 
-            deleteDB  "${arguments[2]}"
+            DBName="${arguments[2]}"
+            DBName=$(echo "$DBName" | tr '[:lower:]' '[:upper:]')
+            deleteDB "$DBName"
         else    
             # In case the user entered too many arguments
             echo "Unsupported format for the delete database command,

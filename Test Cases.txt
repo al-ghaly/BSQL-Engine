@@ -109,6 +109,14 @@
 	- user approved
 	- All good
 
+17- Select
+
+18- Delete
+
+19- Insert
+
+20- Update
+
 # The above features are completed, integrated, and tested, Try your best to make any of them fail!!
 
 
