@@ -371,7 +371,7 @@ Disconnect from $database and try again!"
     #REMOVE COLUMN >table name, >column name
     #INSERT
     #UPDATE
-    #DELETE
+    #DELETE FROM >table name WHERE >column name = (<value)
     #SELECT"    
     elif grep -i -E -q '^[ ]*delete[ ]+database[ ]+' <<< "$1" 
     then 

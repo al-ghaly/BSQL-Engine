@@ -112,6 +112,13 @@
 17- Select
 
 18- Delete
+	- Invalid command (Validate the ReGex)
+	- Not Connected to a Database
+	- Non-existing table
+	- Non-existing column
+	- Delete non-existed rows
+	- Delete some rows
+	- Test Case Sensitivity
 
 19- Insert
 

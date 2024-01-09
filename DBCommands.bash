@@ -63,7 +63,7 @@ COMMENT
 parseCreate(){
     # First Extract the command attributes, it would go something like this
     # Table name (Column 1 name/data type/cons, .......)
-    attributes=$(echo "$1" | sed 's/[ ]*create[ ]*table[ ]*//I')
+    attributes=$(echo "$1" | sed 's/^[ ]*create[ ]*table[ ]*//I')
     # Try to devide the attributes into 2 groups:
     # Table name: what ever before the opening ( => something like "Table name"
     # Columns: whatever inside the () 
@@ -138,7 +138,7 @@ COMMENT
 parseDropC(){
     # Lets get the attributes of the commands: it would gp something
     # Like this => table name, column name
-    attributes=$(echo "$1" | sed 's/[ ]*drop[ ]*column[ ]*//I')
+    attributes=$(echo "$1" | sed 's/^[ ]*drop[ ]*column[ ]*//I')
     # Lets split it into [table name, column name]
     IFS="," read -a arguments <<< "$attributes"
     # Trim any left/right spaces from the table/column name
@@ -168,7 +168,6 @@ parseDropC(){
                 # Delete the column IF EXISTS
                 header=$(head -n 1 "$table_name.csv")
                 exists=$(echo "$header" | sed -n -E "/^($column_name,)|(,$column_name,)|(,$column_name)$|^($column_name)$/p")
-                echo "$exists"
                 if [ "$exists" == "" ]
                 then
                     echo "There is no column named $column_name in $table_name"
@@ -213,7 +212,7 @@ if grep -i -E -q '^[ ]*create[ ]+table[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]+[ ]*\(([ ]*
         parseCreate "$1"
 elif grep -i -E -q '^[ ]*drop[ ]+table[ ]+.*$' <<< "$1"
 then
-    table_name=$(echo "$1" | sed 's/[ ]*drop[ ]*table[ ]*//I')
+    table_name=$(echo "$1" | sed 's/^[ ]*drop[ ]*table[ ]*//I')
     # Trim any left/right spaces from the table name
     table_name=$(echo "$table_name" | sed 's/[[:space:]]*$//')
     # Capitalize Table Name
@@ -250,7 +249,7 @@ then
     fi        
 elif grep -i -E -q '^[ ]*truncate[ ]+table[ ]+.*$' <<< "$1"
 then
-    table_name=$(echo "$1" | sed 's/[ ]*truncate[ ]*table[ ]*//I')
+    table_name=$(echo "$1" | sed 's/^[ ]*truncate[ ]*table[ ]*//I')
     # Trim any left/right spaces from the table name
     table_name=$(echo "$table_name" | sed 's/[[:space:]]*$//')
     # Capitalize Table Name
