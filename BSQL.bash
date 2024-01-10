@@ -371,8 +371,8 @@ Disconnect from $database and try again!"
     #REMOVE COLUMN >table name, >column name
     #INSERT
     #UPDATE
-    #DELETE FROM >table name WHERE >column name = (<value)
-    #SELECT"    
+    #DELETE FROM >table name WHERE >column name = (>value)
+    #SELECT *|>column 1 name, column 2 name, .... FROM >table name WHERE >column name = (>value)"    
     elif grep -i -E -q '^[ ]*delete[ ]+database[ ]+' <<< "$1" 
     then 
         if [[ ${#arguments[@]} -eq 3 ]]

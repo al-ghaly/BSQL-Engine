@@ -110,6 +110,16 @@
 	- All good
 
 17- Select
+	WITH WHERE/WITHOUT WHERE/WITH *
+	- Invalid command (Validate the ReGex)
+	- Not Connected to a Database
+	- Non-existing table
+	- Non-existing Filtering column
+	- Non Existing selecting column
+	- Select *
+	- Non-Existing match
+	- Select matching values
+	- Play for 15 minutes
 
 18- Delete
 	- Invalid command (Validate the ReGex)

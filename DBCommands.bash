@@ -68,7 +68,7 @@ parseCreate(){
     # Table name: what ever before the opening ( => something like "Table name"
     # Columns: whatever inside the () 
         # something like => (Column 1 name/data type/cons, .......)
-    if [[ $attributes =~ ^([^(]+)[:space:]*\(([^)]+)\)$ ]]; then
+    if [[ $attributes =~ ^([^(]+)[[:space:]]*\(([^)]+)\)$ ]]; then
         table_name="${BASH_REMATCH[1]}"
         columns="${BASH_REMATCH[2]}"
         # Create a list of the columns, it would go something like this
