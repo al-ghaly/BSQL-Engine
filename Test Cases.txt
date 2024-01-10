@@ -119,7 +119,9 @@
 	- Select *
 	- Non-Existing match
 	- Select matching values
+	- Select where column is empty
 	- Play for 15 minutes
+	- Test Case Sensitivity
 
 18- Delete
 	- Invalid command (Validate the ReGex)
@@ -135,13 +137,6 @@
 20- Update
 
 # The above features are completed, integrated, and tested, Try your best to make any of them fail!!
-
-
-
-
-
-
-
 
 
 

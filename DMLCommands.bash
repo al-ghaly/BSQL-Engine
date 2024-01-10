@@ -136,10 +136,41 @@ selectRows(){
 
     # Now all looks pretty perfect! Time to show some data !
     # The return statement made it sure we won't get here unless all is good
-    echo "Table: $1."
     echo "${columns[@]}"
-    echo "Filter: $3."
-    echo "Filter Va: $4."
+    awk -v col="$3" -v val="$4" -v columns="${columns[*]}" 'BEGIN{ 
+	FS=","
+	filter_index=0
+	split(columns, columnsArr, " ")
+	}		
+	{
+	line = "|"
+	if(NR==1){
+	i=1
+	while(i<=NF){
+	indexes[$i] = i
+	if($i == col){
+	filter_index=i
+	}
+		i++	
+	}
+	}
+	else if (NR > 4 && filter_index != 0) {
+        if($filter_index == val){
+		for (i = 1; i <= length(columnsArr); i++) {
+		line = line $indexes[columnsArr[i]] "|"
+    }
+		print line
+	}
+	}
+	else if (NR > 4 && filter_index == 0 && col == ""){
+		for (i = 1; i <= length(columnsArr); i++) {
+		line = line $indexes[columnsArr[i]] "|"
+    }
+		print line
+	}
+	}
+	END{
+	}' "$1.csv" 
 }
 
 <<COMMENT
