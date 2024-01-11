@@ -135,6 +135,23 @@
 19- Insert
 
 20- Update
+	WITH WHERE/WITHOUT WHERE
+	- Invalid command (Validate the ReGex)
+	- Not Connected to a Database
+	- Non-existing table
+	- Non-existing Filtering column
+	- Non Existing updating column
+	- Non-Existing match
+	- Violate data type
+	- Violate PK Constraint
+	- Violate Unique Constraint
+	- Violate Required Constraint
+	- update matching values
+	- update where column is empty
+	- Play for 15 minutes
+	- Test Case Sensitivity
+
+21- Add Column
 
 # The above features are completed, integrated, and tested, Try your best to make any of them fail!!
 

@@ -2,6 +2,197 @@
 # This file handles the logic behind all the Database-level commands
 
 <<COMMENT
+    This function takes in a table name, filtering, column, filtering value, columns to retreive
+    and retreive the data from the database.
+    We will need this function as a utility function in the selectRows function
+    to retreive the to-be-selected data, we will also use it as a utility
+    function in both the update and insert statements to check uniqueness 
+    of a column.
+    So it it the single most important function in the file!
+COMMENT
+retreiveData(){
+    awk -v col="$3" -v val="$4" -v columns="$2" 'BEGIN{ 
+	FS=","
+	filter_index=0
+	split(columns, columnsArr, ",")
+	}		
+	{
+	line = "|"
+	if(NR==1){
+	i=1
+	while(i<=NF){
+	indexes[$i] = i
+	if($i == col){
+	filter_index=i
+	}
+		i++	
+	}
+	}
+	else if (NR > 4 && filter_index != 0) {
+        if($filter_index == val){
+		for (i = 1; i <= length(columnsArr); i++) {
+		line = line $indexes[columnsArr[i]] "|"
+    }
+		print line
+	}
+	}
+	else if (NR > 4 && filter_index == 0 && col == ""){
+		for (i = 1; i <= length(columnsArr); i++) {
+		line = line $indexes[columnsArr[i]] "|"
+    }
+		print line
+	}
+	}
+	END{
+	}' "$1.csv" 
+}
+
+<<COMMENT
+    This function handles the logic behind Updating data into a table.
+    It takes in the a table name, filtering column name, update columns, new values, and filtering value and do all the work!
+COMMENT
+updateRows(){
+    echo update
+}
+
+<<COMMENT
+    This function validate the data type and constraints for columns values.
+    It takes in the column names and values and do the work
+COMMENT
+validateData(){
+    echo "$1"
+}
+
+<<COMMENT
+    This function takes an input in this format
+        table name and a string like this:
+        column one = value 1, column2 = value 2, ....
+    and do couple of things:
+        - Validate that all the columns exists in the table name
+        - Extract the columns names and values from the input string
+    Then returns
+        - An empty string if any of the columns does not exist in the table
+        - Otherwise a String in this format:
+            - Col 1,Col2,Col3,...|Value1,Value2,...
+COMMENT
+extractData(){
+    header=$(head -n 1 "$1.csv")
+    # This variable will hold the count of selecting columns that don't exist
+    violations=0
+    # This variable will hold the column names
+    columns=""
+        # This variable will hold the values
+    values=""
+    # This variable holds the column names & values given from the user
+    IFS="," read -a names <<< "$2"
+    for i in "${names[@]}"
+    do
+        IFS="=" read -a tuple <<< "$i"
+        columnName="${tuple[0]}"
+        columnName=$(echo "$columnName" | tr '[:lower:]' '[:upper:]')
+        columnValue="${tuple[1]}"
+        # Trim left/right spaces from both column name and column value
+        columnName=$(echo "$columnName" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        columnValue=$(echo "$columnValue" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        # Check of we already have a column with the same name
+        exists=$(echo "$header" | sed -n -E "/^($columnName,)|(,$columnName,)|(,$columnName)$/p")
+        if [ "$exists" == "" ]
+        # If this column does not exist in the table
+        then  
+            echo "$1 Does not have a column named $columnName"  
+            ((violations++))
+        fi    
+        columns="$columns$columnName,"
+        values="$values$columnValue,"
+    done
+    if ((violations>0))
+    then
+        # Abort the operation and return an empty string
+        echo  "Pease check the column names and try again !!"
+    else 
+        # In case all the columns can be found in the table
+        echo "${columns:0:-1}|${values:0:-1}"
+    fi    
+}
+
+<<COMMENT
+    This function handles the logic behind parsing the update table command.
+    It takes in the a user update command and do all the work!
+COMMENT
+parseUpdate(){
+    # The command goes something like this
+    # UPDATE (TABLE) SET (COLUMNS AND VALUES) WHERE (FILTERING_COL) = (VALUE)
+    # So lets extract the 4 groups: Table name, columns & values, filtering column, value
+    # Let's firs capitalize the command for 2 reasons:
+        # For the match to be case Insensetive
+        # For the table name, column name, filtering column to be capitalized
+    capCommand=$(echo "$1" | tr '[:lower:]' '[:upper:]')
+    if [[ $capCommand =~ ^[[:space:]]*UPDATE(.*)SET[[:space:]]*\[(.*)\][[:space:]]*WHERE(.*)=[[:space:]]*\((.*)\) ]]; then
+        table_name="${BASH_REMATCH[1]}"
+        filteringCol="${BASH_REMATCH[3]}"
+        filteringCol=$(echo "$filteringCol" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        # Trim any left/right spaces from the table name/column name and filtering value
+        filteringValue=$(echo "$1" | grep -oP '\(.*\)')
+        filteringValue=$(echo "$filteringValue" | sed 's/^[[:space:]]*([[:space:]]*//; s/[[:space:]]*)[[:space:]]*$//')
+
+    elif [[ $capCommand =~ ^[[:space:]]*UPDATE(.*)SET[[:space:]]*\[(.*)\] ]]; then
+        table_name="${BASH_REMATCH[1]}"
+        filteringCol=""
+        filteringValue=""
+    else
+        echo "Error happened trying to parse the UPDATE command !!
+Check the Command format and try again."
+    # There is no expected scenario for the function to enter this block
+    # But in case anything unexpected happens abort the select operation
+        return      
+    fi
+    # We can't depend on the matching groupt to extract the columns & values
+    # because the values are capitalized in the matching group, so let's 
+    # extract those here
+    columns=$(echo "$1" | grep -oP '\[.*\]')
+    columns=${columns:1:-1}
+
+    # Trim any left/right spaces from the table name
+    table_name=$(echo "$table_name" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    if [ ! -f "$table_name.csv" ]
+    # Check that the database have such table
+    then
+        echo "There is no table named $table_name  in $database !!" 
+    # Everything is almost good, now let's check the validity of the filtering column
+    else
+        header=$(head -n 1 "$table_name.csv")
+        exists=$(echo "$header" | sed -n -E "/^($filteringCol,)|(,$filteringCol,)|(,$filteringCol)$|^($filteringCol)$/p")
+        if [[ "$filteringCol" != "" && $exists == "" ]]
+        then
+            echo "There is no column named $filteringCol in $table_name"
+        else
+            rowData=$(extractData "$table_name" "$columns")
+            line_count=$(echo -e "$rowData" | wc -l)
+            if [[ $line_count == 1 ]]
+            then
+                validateData "$rowData"
+            fi
+        fi
+    fi        
+}
+
+<<COMMENT
+    This function handles the logic behind inserting data into a table.
+    It takes in table name, insert columns, insert values and do all the work!
+COMMENT
+insertRows(){
+    echo insert
+}
+
+<<COMMENT
+    This function handles the logic behind parsing the insert command.
+    It takes in the a user insert command and do all the work!
+COMMENT
+parseInsert(){
+    echo ParseInsert
+}
+
+<<COMMENT
     This function handles the logic behind deleting data from table.
     It takes in the a table name, column name, and filtering value and do all the work!
 COMMENT
@@ -64,7 +255,7 @@ parseDeleteRow(){
     # Extract the column name and the filtering value from it
     column_name=$(echo "$after_last_where" | sed 's/[[:space:]]*=.*//')
     column_name=$(echo "$column_name" | tr '[:lower:]' '[:upper:]')
-    value=$(echo "$after_last_where" | grep -oP '\(.*?\)')
+    value=$(echo "$after_last_where" | grep -oP '\(.*\)')
     value=$(echo "$value" | sed 's/^[[:space:]]*([[:space:]]*//; s/[[:space:]]*)[[:space:]]*$//')
 
     # Check that the user is connected to a database
@@ -96,18 +287,18 @@ parseDeleteRow(){
     It takes in the a table name, columns name, filter column name, and a filtering value and do all the work!
 COMMENT
 selectRows(){
-    header=$(head -n 1 "$table_name.csv")
+    header=$(head -n 1 "$1.csv")
     # First we will start by extracting and validating the selecting columns
     # We have columns in the format column one, column two, ....
     # So extracting them is a real piece of cake
     if grep -i -E -q '\*' <<< "$2"
     then    
-        IFS="," read -a columns <<< "$header"
+        columns="$header"
     else
         # This variable will hold the count of selecting columns that don't exist
         violations=0
         # This variable will hold the column names after we trim the spaces from it
-        columnNames=""
+        columns=""
         # This variable holds the column names given from the user
         IFS="," read -a names <<< "$2"
         for i in "${names[@]}"
@@ -121,7 +312,7 @@ selectRows(){
                 echo "$1 Does not have a column named $columnName"  
                 ((violations++))
             fi    
-            columnNames="$columnNames$columnName,"
+            columns="$columns$columnName,"
         done
 
         if ((violations>0))
@@ -130,47 +321,26 @@ selectRows(){
             return
         else 
         # In case all the columns can be found in the table
-            IFS="," read -a columns <<< "${columnNames:0:-1}"
+            columns="${columns:0:-1}"
         fi    
     fi    
 
     # Now all looks pretty perfect! Time to show some data !
     # The return statement made it sure we won't get here unless all is good
-    echo "${columns[@]}"
-    awk -v col="$3" -v val="$4" -v columns="${columns[*]}" 'BEGIN{ 
-	FS=","
-	filter_index=0
-	split(columns, columnsArr, " ")
-	}		
-	{
-	line = "|"
-	if(NR==1){
-	i=1
-	while(i<=NF){
-	indexes[$i] = i
-	if($i == col){
-	filter_index=i
-	}
-		i++	
-	}
-	}
-	else if (NR > 4 && filter_index != 0) {
-        if($filter_index == val){
-		for (i = 1; i <= length(columnsArr); i++) {
-		line = line $indexes[columnsArr[i]] "|"
-    }
-		print line
-	}
-	}
-	else if (NR > 4 && filter_index == 0 && col == ""){
-		for (i = 1; i <= length(columnsArr); i++) {
-		line = line $indexes[columnsArr[i]] "|"
-    }
-		print line
-	}
-	}
-	END{
-	}' "$1.csv" 
+    echo ""
+    echo ""
+    echo -n "|"
+    # Print The header
+    for ((i=0; i<${#columns[@]}; i++)); do
+        echo -n "${columns[i]}"
+        echo -n "|"
+    done
+    echo ""
+    echo ""
+    # Retreive the data
+    data=$(retreiveData "$1" "$columns" "$3" "$4")
+    echo "$data"
+    echo ""
 }
 
 <<COMMENT
@@ -189,7 +359,7 @@ parseSelect(){
         table_name="${BASH_REMATCH[2]}"
         columns="${BASH_REMATCH[1]}"
         filteringCol="${BASH_REMATCH[3]}"
-        filteringValue=$(echo "$1" | grep -oP '\(.*?\)')
+        filteringValue=$(echo "$1" | grep -oP '\(.*\)')
         filteringValue=$(echo "$filteringValue" | sed 's/^[[:space:]]*([[:space:]]*//; s/[[:space:]]*)[[:space:]]*$//')
 
     elif [[ $capCommand =~ ^[[:space:]]*SELECT(.*)FROM(.*) ]]; then
@@ -244,6 +414,24 @@ then
 elif grep -i -E -q '^[ ]*select[ ]+((\*)|(([a-zA-Z][a-zA-Z0-9@#$%_ -]*)|(([a-zA-Z][a-zA-Z0-9@#$%_ -]*,[ ]*)+[a-zA-Z][a-zA-Z0-9@#$%_ -]*)))[ ]+from[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]*[ ]*( where[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]*[ ]*=[ ]*\([ ]*.*[ ]*\))?[ ]*$' <<< "$1"
 then
     parseSelect "$1"
+elif grep -i -E -q '^[ ]*update[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]*[ ]+set[ ]*\[[ ]*((([a-zA-Z][a-zA-Z0-9@#$%_ -]*=[^,=]*)|(([a-zA-Z][a-zA-Z0-9@#$%_ -]*=[^,=]*,[ ]*)+[a-zA-Z][a-zA-Z0-9@#$%_ -]*=[^,=]*)))\][ ]*(where[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]*[ ]*=[ ]*\([ ]*.*[ ]*\))?[ ]*$' <<< "$1"
+then
+    if [ "$database" == "" ]
+    # Check that the user is connected to a database
+    then
+        echo "You are not Connected to a Database!!"
+    else 
+        parseUpdate "$1"
+    fi    
+elif grep -i -E -q '^[ ]*insert into[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]*[ ]+values[ ]*\[[ ]*((([a-zA-Z][a-zA-Z0-9@#$%_ -]*=[^,=]*)|(([a-zA-Z][a-zA-Z0-9@#$%_ -]*=[^,=]*,[ ]*)+[a-zA-Z][a-zA-Z0-9@#$%_ -]*=[^,=]*)))\][ ]*$' <<< "$1"
+then
+    if [ "$database" == "" ]
+    # Check that the user is connected to a database
+    then
+        echo "You are not Connected to a Database!!"
+    else 
+        parseInsert "$1"
+    fi  
 else
     echo "Unsupported Command!!
 Check The docs or use the command >Commands to show all supported commands" 
