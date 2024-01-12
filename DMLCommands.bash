@@ -52,15 +52,80 @@ retreiveData(){
     It takes in the a table name, filtering column name, update columns, new values, and filtering value and do all the work!
 COMMENT
 updateRows(){
-    echo update
+    echo "All Looks Good"
 }
 
 <<COMMENT
     This function validate the data type and constraints for columns values.
-    It takes in the column names and values and do the work
+    It takes in the column names and values and do the work.
+    This will work asa utility function for both update and insert functions
+COMMENT
+columnData(){
+    # Get the table's meta data and store them in 3 arrays
+    headerRow1=$(head -n 1 "$1.csv")  # Column names
+    headerRow2=$(sed -n '2p' "$1.csv")  # Column data types
+    headerRow3=$(sed -n '3p' "$1.csv")   # Column Constraints
+    IFS="," read -a namesRow <<< "$headerRow1"
+    IFS="," read -a dataTypes <<< "$headerRow2"
+    IFS="," read -a constraints <<< "$headerRow3"
+    # Loop over the meta data to retreive the data type and constrint for the column
+    # Get the length of the array
+    array_length=${#namesRow[@]}
+    for ((i=0; i<array_length; i++)); do
+        if [[ ${namesRow[i]} == "$2" ]]
+        then
+            dataType=${dataTypes[i]}
+            constrint=${constraints[i]}
+            echo "$dataType,$constrint"
+            return
+        fi    
+    done
+}
+
+<<COMMENT
+    This function validate the data type and constraints for columns values.
+    This will work asa utility function for both update and insert functions.
+    This function takes in the table name, column names and values and return:
+        - Empty string in case of no violations
+        - Non-Empty String in case of any data type/constraints violations.
 COMMENT
 validateData(){
-    echo "$1"
+    IFS="," read -a extractedColumns <<< "$2"
+    IFS="," read -a extractedValues<<< "$3"
+    array_length=${#extractedColumns[@]}
+    for ((i=0; i<array_length; i++)); do
+        colName="${extractedColumns[i]}"
+        colValue="${extractedValues[i]}"
+        metaData=$(columnData "$table_name" "$colName")
+        IFS="," read -a tuple <<< "$metaData"
+        colDataType="${tuple[0]}"
+        colConstraint="${tuple[1]}"
+        # Check Data Type
+        if [ "$colDataType" = "int" ]
+        then
+            if ! grep -E -q '^[0-9]*$' <<< "$colValue"
+            then
+                echo "Invalid value for Integer columns $colName"
+            fi
+        fi    
+        # Check Constraint
+        if [[ "$colConstraint" = "required" || "$colConstraint" == "pk" ]]
+        then
+            if [ "$colValue" = "" ]
+                then
+                echo "$colName's Value can't be null as it is a $colConstraint Column"
+            fi
+        fi    
+        if [[ "$colConstraint" = "unique" || "$colConstraint" == "pk" ]]
+        then
+            data=$(retreiveData "$1" "$colName")
+            exists=$(echo "$data" | sed -n -E "/^\|$colValue\|$/p")
+            if [[ "$exists" != "" ]]
+            then
+                echo "$colConstraint Constraint Violated for $colName !"
+            fi
+        fi
+    done
 }
 
 <<COMMENT
@@ -111,7 +176,7 @@ extractData(){
         echo  "Pease check the column names and try again !!"
     else 
         # In case all the columns can be found in the table
-        echo "${columns:0:-1}|${values:0:-1}"
+        echo "${columns:0:-1}=${values:0:-1}"
     fi    
 }
 
@@ -170,7 +235,16 @@ Check the Command format and try again."
             line_count=$(echo -e "$rowData" | wc -l)
             if [[ $line_count == 1 ]]
             then
-                validateData "$rowData"
+                IFS="=" read -a tuple <<< "$rowData"
+                columnNames="${tuple[0]}"
+                columnValues="${tuple[1]}"
+                violated=$(validateData "$table_name" "$columnNames" "$columnValues")
+                if [[ $violated == "" ]]
+                then
+                    updateRows "$table_name" "$columnNames" "$columnValues" "$filteringCol" "$filteringValue"
+                else 
+                    echo "$violated"    
+                fi
             fi
         fi
     fi        

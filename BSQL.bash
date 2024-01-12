@@ -369,8 +369,8 @@ Disconnect from $database and try again!"
   ##TABLE COMMANDS:
     #ADD COLUMN >table name, >column name
     #REMOVE COLUMN >table name, >column name
-    #INSERT
-    #UPDATE
+    #INSERT INTO >table name VALUES [>>column 1 name = value, column 2 name = value, ....] 
+    #UPDATE >table name SET [>>column 1 name = value, column 2 name = value, ....] WHERE >column name = (>value)
     #DELETE FROM >table name WHERE >column name = (>value)
     #SELECT *|>column 1 name, column 2 name, .... FROM >table name WHERE >column name = (>value)"    
     elif grep -i -E -q '^[ ]*delete[ ]+database[ ]+' <<< "$1" 
@@ -403,7 +403,10 @@ Note that the database name can't have any spaces"
 please use the supported format as descriped in the documentation
 
 #DELETE USER"
-        fi  
+        fi 
+    elif grep -i -E -q '^[ ]*clear[ ]*$' <<< "$1" 
+    then
+        clear
     else
     # It is more likely a Database Command or an Invalid command, lets handle those in a separate file
         if [ "$database" == "" ]
@@ -450,6 +453,3 @@ COMMENT
     # Parse the command and behave according to it
     parse "$command"
 done
-
-
-
