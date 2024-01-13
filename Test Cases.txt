@@ -141,8 +141,11 @@
 	- Violate PK Constraint
 	- Violate Unique Constraint
 	- Violate Required Constraint
-	- Insert some values
+	- Insert some values (all rows)
+	- Insert some values (some rows)
+	- Insert in various orders
 	- Test Case Sensitivity
+	- Play around for 5 minutes
 	- Insert null and check unique constraint (2 nulls)
 
 20- Update
@@ -158,7 +161,7 @@
 	- Violate Unique Constraint
 	- Violate Required Constraint
 	- update matching values
-	- update where column is empty
+	- update where a column is empty
 	- Play for 15 minutes
 	- Test Case Sensitivity
 	- Update to null and check unique constraint (2 nulls)
@@ -171,21 +174,9 @@
 23- Clear
 	- Invalid command (Validate the ReGex)
 
-## Try to manipulate data and test the meta data | data separation. ##
+## Try to manipulate data and test the metadata | data separation. ##
 
 # The above features are completed, integrated, and tested, Try your best to make any of them fail!!
-
-
-
-
-
-upda
-
-
-
-
-
-
 
 
 

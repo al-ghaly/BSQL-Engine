@@ -231,6 +231,13 @@ extractData(){
         then  
             echo "$1 Does not have a column named $columnName"  
             ((violations++))
+        else  
+            duplicate=$(echo "$columns" | sed -n -E "/^($columnName,)|(,$columnName,)/p") 
+            if [ "$duplicate" != "" ]
+            then
+                ((violations++))
+                echo "The column name $columnName is specified more than once in the SET clause !!"
+            fi    
         fi    
         columns="$columns$columnName,"
         values="$values$columnValue,"
@@ -322,7 +329,46 @@ Check the Command format and try again."
     It takes in table name, insert columns, insert values and do all the work!
 COMMENT
 insertRows(){
-    echo insert
+    IFS="," read -a insertColumns <<< "$2"
+    IFS="," read -a insertValues <<< "$3"
+
+    # Declare a dictionary holding names and values in a key: value pairs
+    declare -A insertData
+    # Loop over the given columns/values arrays and construct the dictionary
+    array_length=${#insertColumns[@]}
+    # Loop over the columns and get the corresponding value in the insert statement
+    for ((i=0; i<array_length; i++)); do
+        columnName=${insertColumns[i]}
+        columnValue=${insertValues[i]}
+        insertData["$columnName"]="$columnValue"
+    done
+
+    row="" # The row to insert in the database
+    violations=0 # This variable holds the number of non-inserted required columns
+    # Get the table's meta data and store them in 2 arrays
+    headerRow1=$(head -n 1 "$1.csv")  # Column names
+    headerRow3=$(sed -n '3p' "$1.csv")   # Column Constraints
+    IFS="," read -a namesRow <<< "$headerRow1"
+    IFS="," read -a constraints <<< "$headerRow3"
+    # Get the length of the array
+    array_length=${#namesRow[@]}
+    # Loop over the columns and get the corresponding value in the insert statement
+    for ((i=0; i<array_length; i++)); do
+        columnName=${namesRow[i]}
+        columnCon=${constraints[i]}
+        data=${insertData[$columnName]}
+        if [[ "$data" == "" && ($columnCon == "required" || $columnCon == "pk") ]]
+        then
+            echo "$columnCon Column: $columnName Is missing in the insert statement !"  
+            ((violations++))
+        fi
+        row="$row$data,"
+    done
+        if ((violations==0))
+    then
+        echo "${row:0:-1}" >> "$1.csv"
+        echo "Data Inserted succesfully into $1"
+    fi    
 }
 
 <<COMMENT
@@ -330,7 +376,54 @@ insertRows(){
     It takes in the a user insert command and do all the work!
 COMMENT
 parseInsert(){
-    echo ParseInsert
+    # The command goes something like this
+    # INSERT INTO (TABLE) VALUES (COLUMNS AND VALUES)
+    # So lets extract the 2 groups: Table name, columns & values
+    # Let's firs capitalize the command for 2 reasons:
+        # For the match to be case Insensetive
+        # For the table name, column name
+    capCommand=$(echo "$1" | tr '[:lower:]' '[:upper:]')
+    if [[ $capCommand =~ ^[[:space:]]*INSERT[[:space:]]*INTO(.*)VALUES[[:space:]]*\[(.*)\][[:space:]]* ]]; then
+        table_name="${BASH_REMATCH[1]}"
+    else
+        echo "Error happened trying to parse the INSERT command !!
+Check the Command format and try again."
+    # There is no expected scenario for the function to enter this block
+    # But in case anything unexpected happens abort the select operation
+        return      
+    fi
+    # We can't depend on the matching group to extract the columns & values
+    # because the values are capitalized in the matching group, so let's 
+    # extract those here
+    columns=$(echo "$1" | grep -oP '\[.*\]')
+    columns=${columns:1:-1}
+
+    # Trim any left/right spaces from the table name
+    table_name=$(echo "$table_name" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    if [ ! -f "$table_name.csv" ]
+    # Check that the database have such table
+    then
+        echo "There is no table named $table_name  in $database !!" 
+    # Everything is almost good, now let's check the validity of the filtering column
+    else
+        rowData=$(extractData "$table_name" "$columns")
+        line_count=$(echo -e "$rowData" | wc -l)
+        if [[ $line_count == 1 ]]
+        then
+            IFS="=" read -a tuple <<< "$rowData"
+            columnNames="${tuple[0]}"
+            columnValues="${tuple[1]}"
+            violated=$(validateData "$table_name" "$columnNames" "$columnValues" "unique") # Unique here cuz we need to check the uniqueness of the entered data.
+            if [[ $violated == "" ]]
+            then
+                insertRows "$table_name" "$columnNames" "$columnValues"
+            else 
+                echo "$violated"    
+            fi
+        else
+            echo "$rowData"    
+        fi
+    fi    
 }
 
 <<COMMENT
@@ -564,7 +657,7 @@ then
     else 
         parseUpdate "$1"
     fi    
-elif grep -i -E -q '^[ ]*insert into[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]*[ ]+values[ ]*\[[ ]*((([a-zA-Z][a-zA-Z0-9@#$%_ -]*=[^,=]*)|(([a-zA-Z][a-zA-Z0-9@#$%_ -]*=[^,=]*,[ ]*)+[a-zA-Z][a-zA-Z0-9@#$%_ -]*=[^,=]*)))\][ ]*$' <<< "$1"
+elif grep -i -E -q '^[ ]*insert[ ]+into[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]*[ ]+values[ ]*\[[ ]*((([a-zA-Z][a-zA-Z0-9@#$%_ -]*=[^,=]*)|(([a-zA-Z][a-zA-Z0-9@#$%_ -]*=[^,=]*,[ ]*)+[a-zA-Z][a-zA-Z0-9@#$%_ -]*=[^,=]*)))\][ ]*$' <<< "$1"
 then
     if [ "$database" == "" ]
     # Check that the user is connected to a database
