@@ -133,6 +133,17 @@
 	- Test Case Sensitivity
 
 19- Insert
+	- Invalid command (Validate the ReGex)
+	- Not Connected to a Database
+	- Non-existing table
+	- Non Existing inserting column
+	- Violate data type
+	- Violate PK Constraint
+	- Violate Unique Constraint
+	- Violate Required Constraint
+	- Insert some values
+	- Test Case Sensitivity
+	- Insert null and check unique constraint (2 nulls)
 
 20- Update
 	WITH WHERE/WITHOUT WHERE
@@ -150,8 +161,17 @@
 	- update where column is empty
 	- Play for 15 minutes
 	- Test Case Sensitivity
+	- Update to null and check unique constraint (2 nulls)
 
 21- Add Column
+
+22- Exit
+	- Invalid command (Validate the ReGex)
+
+23- Clear
+	- Invalid command (Validate the ReGex)
+
+## Try to manipulate data and test the meta data | data separation. ##
 
 # The above features are completed, integrated, and tested, Try your best to make any of them fail!!
 
@@ -159,7 +179,7 @@
 
 
 
-
+upda
 
 
 

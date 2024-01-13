@@ -52,7 +52,55 @@ retreiveData(){
     It takes in the a table name, filtering column name, update columns, new values, and filtering value and do all the work!
 COMMENT
 updateRows(){
-    echo "All Looks Good"
+    # First let's make the updates, then check if it is violates the uniqueness conditions
+    awk -v col="$4" -v val="$5" -v cols="$2" -v vals="$3" 'BEGIN{ 
+            FS=","
+            OFS=","
+            filter_index=0
+            split(cols, columnsArr, ",")
+            split(vals, valuesArr, ",")
+        }		
+        {
+            if(NR==1){
+                i=1
+                while(i<=NF){
+                    indexes[$i] = i
+                    if($i == col){
+                        filter_index=i
+                    }
+                    i++	
+                }
+                print $0
+            }
+            else if (NR > 1 && NR < 5){
+                print $0
+            }
+            else if (NR > 4 && filter_index != 0) {
+                if($filter_index == val){
+                    for (i = 1; i <= length(columnsArr); i++) {
+                        $indexes[columnsArr[i]] = valuesArr[i]
+                    }
+                }
+                print $0
+            }
+            else if (NR > 4 && filter_index == 0 && col == ""){
+                for (i = 1; i <= length(columnsArr); i++) {
+                    $indexes[columnsArr[i]] = valuesArr[i]
+                }
+                print $0
+            }
+        }
+        END{
+	}' "$1.csv" > "$1.temp.csv"
+    violated=$(validateData "$1.temp" "$2" "$3" "once") # once here cuz we have already installed a single row, so it is okay
+    if [[ $violated == "" ]]
+    then
+        mv "$1.temp.csv" "$1.csv"
+        echo "Data Updated Succesfully."
+    else 
+        rm -f "$1.temp.csv"
+        echo "$violated"    
+    fi
 }
 
 <<COMMENT
@@ -88,6 +136,13 @@ columnData(){
     This function takes in the table name, column names and values and return:
         - Empty string in case of no violations
         - Non-Empty String in case of any data type/constraints violations.
+    PS: The fourth parameter is:
+        - skip: don't check for uniqueness.
+        - once: Check the value exists exactly one time
+        - unique: Check that it does not exist.
+        We need this flag to be able to do the following:
+            In case of an update
+                - Check the uniqueness after the update effect is completed NOT BEFORE
 COMMENT
 validateData(){
     IFS="," read -a extractedColumns <<< "$2"
@@ -96,12 +151,12 @@ validateData(){
     for ((i=0; i<array_length; i++)); do
         colName="${extractedColumns[i]}"
         colValue="${extractedValues[i]}"
-        metaData=$(columnData "$table_name" "$colName")
+        metaData=$(columnData "$1" "$colName")
         IFS="," read -a tuple <<< "$metaData"
         colDataType="${tuple[0]}"
         colConstraint="${tuple[1]}"
         # Check Data Type
-        if [ "$colDataType" = "int" ]
+        if [[ "$colDataType" = "int" && "$4" != "once" ]]
         then
             if ! grep -E -q '^[0-9]*$' <<< "$colValue"
             then
@@ -111,18 +166,28 @@ validateData(){
         # Check Constraint
         if [[ "$colConstraint" = "required" || "$colConstraint" == "pk" ]]
         then
-            if [ "$colValue" = "" ]
+            if [[ "$colValue" = "" && "$4" != "once" ]]
                 then
                 echo "$colName's Value can't be null as it is a $colConstraint Column"
             fi
         fi    
+        # Check fro uniqueness (FOR PK & Unique)
         if [[ "$colConstraint" = "unique" || "$colConstraint" == "pk" ]]
         then
             data=$(retreiveData "$1" "$colName")
             exists=$(echo "$data" | sed -n -E "/^\|$colValue\|$/p")
-            if [[ "$exists" != "" ]]
+            # If there is a match when we are checking for unique, return error
+            if [[ "$exists" != "" && "$4" == "unique" ]]
             then
                 echo "$colConstraint Constraint Violated for $colName !"
+            # if a single accurance is accepted
+            elif [[ "$exists" != "" && "$4" == "once" ]]
+            then 
+                line_count=$(echo -e "$exists" | wc -l)
+                if [[ $line_count -gt 1 ]]
+                then
+                    echo "$colConstraint Constraint Violated for $colName !"
+                fi
             fi
         fi
     done
@@ -238,13 +303,15 @@ Check the Command format and try again."
                 IFS="=" read -a tuple <<< "$rowData"
                 columnNames="${tuple[0]}"
                 columnValues="${tuple[1]}"
-                violated=$(validateData "$table_name" "$columnNames" "$columnValues")
+                violated=$(validateData "$table_name" "$columnNames" "$columnValues" "skip") # Skip here cuz we won't check the uniqueness now.
                 if [[ $violated == "" ]]
                 then
                     updateRows "$table_name" "$columnNames" "$columnValues" "$filteringCol" "$filteringValue"
                 else 
                     echo "$violated"    
                 fi
+            else
+                echo "$rowData"    
             fi
         fi
     fi        
