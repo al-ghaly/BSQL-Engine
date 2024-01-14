@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# Print a Start Up Text to the user
-echo "Application Has Started 
-Enter your command in the command bar:
-PS: type -commands- for a list of all available commands"
-
 # Set initial value for the username
 export username=""
 # Set initial value for the connected database
@@ -347,7 +342,6 @@ Disconnect from $database and try again!"
         fi  
     elif grep -i -E -q '^[ ]*commands[ ]*$' <<< "$1"    
     then    
-        # TODO list all supperted commands
         echo "Supported commands:
   ##SYSTEM COMMANDS:
     #REGISTER USER >username >password
@@ -360,6 +354,8 @@ Disconnect from $database and try again!"
     #DELETE USER 
     #DELETE DATABASE >databaseName
     #COMMANDS
+    #CLEAR
+    ##COMMENT
     #EXIT
   ##DATABASE COMMANDS:
     #CREATE TABLE >table name (column name/data type/constraint,.........)
@@ -367,7 +363,7 @@ Disconnect from $database and try again!"
     #LIST TABLES
     #TRUNCATE TABLE >table name
   ##TABLE COMMANDS:
-    #ADD COLUMN >table name, >column name
+    #ADD COLUMN >table name, >column name|>data type|>constraint
     #REMOVE COLUMN >table name, >column name
     #INSERT INTO >table name VALUES [>>column 1 name = value, column 2 name = value, ....] 
     #UPDATE >table name SET [>>column 1 name = value, column 2 name = value, ....] WHERE >column name = (>value)
@@ -407,6 +403,12 @@ please use the supported format as descriped in the documentation
     elif grep -i -E -q '^[ ]*clear[ ]*$' <<< "$1" 
     then
         clear
+    elif grep -i -E -q '^[ ]*$' <<< "$1" 
+    then
+        :
+    elif grep -i -E -q '^[ ]*#' <<< "$1" 
+    then
+        :
     else
     # It is more likely a Database Command or an Invalid command, lets handle those in a separate file
         if [ "$database" == "" ]
@@ -434,22 +436,46 @@ Contact the database administrator in case of any missing data"
 fi
 cd data
 
-##TODO: REMOVE THOSE LINES AS THEY ARE TEMP FOR TEST
-login "ghaly" "12345"  
-connect "DB1"
+##  THE APPLICATION STARTS HERE  ##
+fileError=""
+if [ "$1" != "" ]
+# If the user gave the application a script file, run the script
+then 
+    if [ ! -f "../$1" ]
+    then
+        fileError="Error!"
+        echo "Script file $1 does not exist!"
+        echo "Starting the command lin App ..."
+    else   
+        # Run the script file 
+        while IFS= read -r line; do
+        # Process each line (replace this with your actual logic)
+        # Parse the command and behave according to it
+        parse "$line"
+    done < "../$1"  
+    fi
+fi
+# If no script file is specified, or invalid file name is passed: Run a command line application
+if [[ "$1" == "" || "$fileError" != "" ]]
+then 
+    # Print a Start Up Text to the user
+    echo "Application Has Started 
+Enter your command in the command bar:
+PS: type -commands- for a list of all available commands"
 
-# Start the application
-while $active
-do
+    # Start the command line app
+    while $active
+    do
 <<COMMENT
-    We have set IFS to null, to prevent the auto trimming for left
-    and right spaces from the user-input.
-    Actually this functionality would be of a great help for us, 
-    but I prefer to control the behavior myself and don't depend on 
-    any default behavior, because the default behavior may vary from
-    a Linux version to the other, So I need to keep everything under my control.
+        We have set IFS to null, to prevent the auto trimming for left
+        and right spaces from the user-input.
+        Actually this functionality would be of a great help for us, 
+        but I prefer to control the behavior myself and don't depend on 
+        any default behavior, because the default behavior may vary from
+        a Linux version to the other, So I need to keep everything under my control.
 COMMENT
-    IFS= read -p "$username [$database] > " command
-    # Parse the command and behave according to it
-    parse "$command"
-done
+        IFS= read -p "$username [$database] > " command
+        # Parse the command and behave according to it
+        parse "$command"
+    done
+fi

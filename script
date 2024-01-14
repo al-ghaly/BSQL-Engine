@@ -1,0 +1,8 @@
+login user ghaly 12345
+connect database db1
+
+select * from tab
+
+# do nothing
+
+select * from tab where name = (alya)

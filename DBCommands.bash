@@ -307,5 +307,3 @@ else
             . ../../DMLCommands.bash "$1"  
         fi    
 fi
-
-

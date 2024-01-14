@@ -670,4 +670,3 @@ else
     echo "Unsupported Command!!
 Check The docs or use the command >Commands to show all supported commands" 
 fi
-
