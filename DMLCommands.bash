@@ -465,32 +465,29 @@ deleteRows(){
     It takes in the a user command and do all the work!
 COMMENT
 parseDeleteRow(){
-    # First Extract the command attributes, it would go something like this
-    # Table name where column name = (value)
-    attributes=$(echo "$1" | sed 's/^[ ]*delete[ ]*from[ ]*//I') 
-    # We need to extract 3 attributes: Table name, column name, and value
-    # We want first to get table name then rest
-    # Spliting the (Table name where column name = (value)) over the word
-    # Where is a smart idea, unless the user puts a where word in the table name!
-    # Extract whatever before the where statement and this is the table name
-
-    # We need to make sure the where is lower case for the splitting to work as expected
-    lowered_attr=$(echo "$attributes" | tr '[:upper:]' '[:lower:]')
-    bfore_last_where=$(echo "$lowered_attr" | awk -F'where' -v OFS='where' '{$NF=""; print $0}')
-    
-    # Trim any left/right spaces from the table name
-    table_name=$(echo "$bfore_last_where" | sed 's/^[[:space:]]*//;s/[[:space:]]*where[[:space:]]*$//I')
-    # Capitalize the table name
-    table_name=$(echo "$table_name" | tr '[:lower:]' '[:upper:]')
-
-    # Then parse the text after the where statement
-    # It will be something like this "Column name = (Value)""
-    after_last_where=$(echo "$1" | sed 's/.*where[[:space:]]*//I')
-    # Extract the column name and the filtering value from it
-    column_name=$(echo "$after_last_where" | sed 's/[[:space:]]*=.*//')
-    column_name=$(echo "$column_name" | tr '[:lower:]' '[:upper:]')
-    value=$(echo "$after_last_where" | grep -oP '\(.*\)')
-    value=$(echo "$value" | sed 's/^[[:space:]]*([[:space:]]*//; s/[[:space:]]*)[[:space:]]*$//')
+    # The command goes something like this
+    # DELETE FROM >TABLE WHERE >COLUMN = (>value)
+    # So lets extract the 3 groups: Table name, column name and values
+    # Let's first capitalize the command for 2 reasons:
+        # For the match to be case Insensetive
+        # For the table name, column name to be capitalized
+    capCommand=$(echo "$1" | tr '[:lower:]' '[:upper:]')
+    if [[ $capCommand =~ ^[[:space:]]*DELETE[[:space:]]*FROM(.*)WHERE(.*)=[[:space:]]*\((.*)\) ]]; then
+        table_name="${BASH_REMATCH[1]}"
+            # Trim any left/right spaces from the table name
+    table_name=$(echo "$table_name" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        column_name="${BASH_REMATCH[2]}"
+        column_name=$(echo "$column_name" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        # Trim any left/right spaces from the table name/column name and filtering value
+        value=$(echo "$1" | grep -oP '\(.*\)')
+        value=$(echo "$value" | sed 's/^[[:space:]]*([[:space:]]*//; s/[[:space:]]*)[[:space:]]*$//')
+    else
+        echo "Error happened trying to parse the DELETE command !!
+Check the Command format and try again."
+    # There is no expected scenario for the function to enter this block
+    # But in case anything unexpected happens abort the select operation
+        return      
+    fi
 
     # Check that the user is connected to a database
     if [ "$database" == "" ]
@@ -642,7 +639,7 @@ Check the Command format and try again."
     fi
 }
 
-if grep -i -E -q '^[ ]*delete[ ]+from[ ]+.+[ ]+where[ ]+(.+)=[ ]*\((.+)\)[ ]*$' <<< "$1"
+if grep -i -E -q '^[ ]*delete[ ]+from[ ]+.+[ ]+where[ ]+(.+)=[ ]*\((.*)\)[ ]*$' <<< "$1"
 then
     parseDeleteRow "$1"
 elif grep -i -E -q '^[ ]*select[ ]+((\*)|(([a-zA-Z][a-zA-Z0-9@#$%_ -]*)|(([a-zA-Z][a-zA-Z0-9@#$%_ -]*,[ ]*)+[a-zA-Z][a-zA-Z0-9@#$%_ -]*)))[ ]+from[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]*[ ]*( where[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]*[ ]*=[ ]*\([ ]*.*[ ]*\))?[ ]*$' <<< "$1"

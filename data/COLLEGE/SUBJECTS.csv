@@ -1,0 +1,24 @@
+NAME,DURATION,INSTRUCTOR,HALL
+string,int,string,string
+pk,,unique,
+
+Math,,Prof. Johnson,
+Physics,45,Dr. Brown,Hall B
+Chemistry,50,Prof. White,
+Computer Science,55,Dr. Smith,Hall D
+Biology,40,Dr. Anderson,Hall E
+History,30,Prof. Davis,Hall F
+English Literature,,Dr. Taylor,Hall G
+Economics,45,Prof. Harris,Hall H
+Political Science,,Prof. Martinez,
+Art,25,Dr. Turner,Hall K
+Geography,40,Dr. Clark,
+Physical Education,20,Prof. Baker,
+Statistics,50,Dr. Hill,
+Philosophy,35,Prof. Cooper,
+Sociology,30,Dr. Flores,
+Environmental Science,45,Prof. Powell,
+Engineering,,Dr. Rogers,
+Marketing,40,Prof. Wood,
+Psychology,40,Dr. Rodriguez,
+Music,30,Prof. White Jr,Hall L

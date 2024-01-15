@@ -207,7 +207,7 @@ Disconnect from $database and try again!"
             "Yes")
                 echo "Deleting $1 ..."
                 rm -r "$1"
-                echo "$1 database Deleted"
+                echo "$1 database Dropped"
                 break
                 ;;
             "No")
@@ -352,7 +352,7 @@ Disconnect from $database and try again!"
     #DISCONNECT
     #LIST DATABASES
     #DELETE USER 
-    #DELETE DATABASE >databaseName
+    #DROP DATABASE >databaseName
     #COMMANDS
     #CLEAR
     ##COMMENT
@@ -369,7 +369,7 @@ Disconnect from $database and try again!"
     #UPDATE >table name SET [>>column 1 name = value, column 2 name = value, ....] WHERE >column name = (>value)
     #DELETE FROM >table name WHERE >column name = (>value)
     #SELECT *|>column 1 name, column 2 name, .... FROM >table name WHERE >column name = (>value)"    
-    elif grep -i -E -q '^[ ]*delete[ ]+database[ ]+' <<< "$1" 
+    elif grep -i -E -q '^[ ]*drop[ ]+database[ ]+' <<< "$1" 
     then 
         if [[ ${#arguments[@]} -eq 3 ]]
         # The user have entered 3 arguments as expected

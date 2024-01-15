@@ -1,0 +1,14 @@
+NUMBER,LOCATION,FLOORS
+int,string,int
+pk,required,
+
+101,Main Campus,
+102,Science Center,
+103,Library,
+104,Student Union,2
+105,Engineering Building,6
+106,Arts Building,
+107,Sports Complex,3
+108,Medical Center,
+109,Business School,3
+110,Dormitory,8

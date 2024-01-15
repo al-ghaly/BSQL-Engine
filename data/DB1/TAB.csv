@@ -1,0 +1,15 @@
+NAME,AGE,EMAIL,ADDRESS
+string,int,string,string
+pk,required,unique,
+
+ghaly,25,alghaly_m@yahoo.com,Dumyat
+aya,24,,
+alya,25,alya@gmail.com,Cairo
+emma,26,,Egypt
+Irene,30,Irene,
+hoda,30,,Alex
+Hanan,22,HhAn,
+Aly,25,,
+Toqa,23,toqa@yahoo.com,Dumyat
+Emily,32,,
+

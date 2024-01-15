@@ -9,15 +9,20 @@ table_name=""
     It takes in the a table name and columns details and do all the heavy work!
 COMMENT
 createTable(){
+    # Create a list of the columns, it would go something like this
+    # [column 1 name/data type/cons, .......]
+    IFS="," read -a column <<< "$2"
+
     columnsNames=""
     types=""
     constraints=""
+    foreigns="" # This variable holds the foreign key columns
     # We will use this variable to count the PKs in the commands to assure a single PK is given at most
     pks=0
     # We will use this variable to count the duplications in the columns names to assure a unique name is given for each
     duplicates=0
     # for each column: in the format of col name/type/constraint
-    for var in "$@"
+    for var in "${column[@]}"
     do
         # Extract column details: something like => [col name, type, constrains]
         IFS="/" read -a details <<< "$var"
@@ -51,8 +56,8 @@ createTable(){
         # Convert the types and constraints into lower case
         types=$(echo "$types" | tr '[:upper:]' '[:lower:]')
         constraints=$(echo "$constraints" | tr '[:upper:]' '[:lower:]')
-        printf "%s\n%s\n%s\n\n" "${columnsNames:0:-1}" "${types:0:-1}" "${constraints:0:-1}" > "$table_name.csv"
-        echo "table $table_name is created in $database"
+        printf "%s\n%s\n%s\n\n" "${columnsNames:0:-1}" "${types:0:-1}" "${constraints:0:-1}" > "$1.csv"
+        echo "table $1 is created in $database"
     fi    
 }
 
@@ -68,12 +73,9 @@ parseCreate(){
     # Table name: what ever before the opening ( => something like "Table name"
     # Columns: whatever inside the () 
         # something like => (Column 1 name/data type/cons, .......)
-    if [[ $attributes =~ ^([^(]+)[[:space:]]*\(([^)]+)\)$ ]]; then
+    if [[ $attributes =~ ^([^(]+)[[:space:]]*\(([^)]+)\)[[:space:]]*$ ]]; then
         table_name="${BASH_REMATCH[1]}"
         columns="${BASH_REMATCH[2]}"
-        # Create a list of the columns, it would go something like this
-        # [column 1 name/data type/cons, .......]
-        IFS="," read -a column <<< "$columns"
         # Trim any left/right spaces from the table name
         table_name=$(echo "$table_name" | sed 's/[[:space:]]*$//')
         # Capitalize the table name
@@ -86,12 +88,12 @@ parseCreate(){
         then
             echo "There is already a table named $table_name  !!"     
         else
-            createTable "${column[@]}"
+            createTable "$table_name" "$columns"
         fi    
     else    
         echo "Could not parse the CREATE TABLE Command
 Please use the suggested format 
-#CREATE TABLE >name (column name/data type/constraint1-con2)
+#CREATE TABLE >name (column name/data type/constraint)
 Check docs for more details!"    
     fi
 }
@@ -206,7 +208,7 @@ parseAddC(){
 
             ### HERE WE WOULD COMPLETE THE COMMAND PARSING ###
 # This ReGex is too complex to be illustrated in a comment, check the docs.
-if grep -i -E -q '^[ ]*create[ ]+table[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]+[ ]*\(([ ]*[a-zA-Z][a-zA-Z0-9@#$%_ -]+[ ]*\/[ ]*(int|string)[ ]*(\/[ ]*(pk|unique|required)[ ]*)?,)+\)[ ]*$' <<< "${1:0:-1},${1:${#1}-1}"
+if grep -i -E -q '^[ ]*create[ ]+table[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]+[ ]*\((([ ]*[a-zA-Z][a-zA-Z0-9@#$%_ -]+[ ]*\/[ ]*(int|string|(fk[ ]+references[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]+))[ ]*(\/[ ]*(pk|unique|required)[ ]*)?)|((([ ]*[a-zA-Z][a-zA-Z0-9@#$%_ -]+[ ]*\/[ ]*(int|string|(fk[ ]+references[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]+))[ ]*(\/[ ]*(pk|unique|required)[ ]*)?),[ ]*)+([ ]*[a-zA-Z][a-zA-Z0-9@#$%_ -]+[ ]*\/[ ]*(int|string|(fk[ ]+references[ ]+[a-zA-Z][a-zA-Z0-9@#$%_ -]+))[ ]*(\/[ ]*(pk|unique|required)[ ]*)?)))\)[ ]*$' <<< "$1"
     then
         # Parse a create table command
         parseCreate "$1"
