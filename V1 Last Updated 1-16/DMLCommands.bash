@@ -158,7 +158,7 @@ validateData(){
         # Check Data Type
         if [[ "$colDataType" = "int" && "$4" != "once" ]]
         then
-            if ! grep -E -q '^((-?[ ]?[1-9][0-9]*)|0)?$' <<< "$colValue"
+            if ! grep -E -q '^((-?[1-9][0-9]*)|0)?$' <<< "$colValue"
             then
                 echo "Invalid value for Integer columns $colName"
             fi
