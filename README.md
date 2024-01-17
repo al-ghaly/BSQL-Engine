@@ -13,66 +13,66 @@
 
 ### 1. Register User
 >To Create a new user 
-- **Format:** `REGISTER USER username password`
-- **Example:** `REGISTER USER Ghaly 12345`
-- **Complexity:** *O(U)*
+- Format: `REGISTER USER username password`
+- Example: `REGISTER USER Ghaly 12345`
+- Complexity: *O(U)*
    - **U**: is the number of users in the system
 
 
 ### 2. Delete User
 >To delete your account from the system<br> You have to be logged in and not connected to a database
-- **Format:** `DELETE USER`
-- **Complexity:** *O(U)*
+- Format: `DELETE USER`
+- Complexity: *O(U)*
 
 ### 3. Login User
 >To log into the system
-- **Format:** `LOGIN USER username password`
-- **Example:** `LOGIN USER Ghaly 12345`
-- **Complexity:** *O(U)*
+- Format: `LOGIN USER username password`
+- Example: `LOGIN USER Ghaly 12345`
+- Complexity: *O(U)*
 
 ### 4. Logout
 >To log out from the system
-- **Format:** `LOGOUT`
-- **Complexity:** *O(1)*
+- Format: `LOGOUT`
+- Complexity: *O(1)*
 
 ### 5. Create Database
 
-- **Format:** `CREATE DATABASE database`
-- **Example:** `CREATE DATABASE COLLEGE`
-- **Complexity:** *O(1)*
+- Format: `CREATE DATABASE database`
+- Example: `CREATE DATABASE COLLEGE`
+- Complexity: *O(1)*
 
 ### 6. Drop Database
 
-- **Format:** `DROP DATABASE database`
-- **Example:** `DROP DATABASE COLLEGE`
-- **Complexity:** *O(1)*
+- Format: `DROP DATABASE database`
+- Example: `DROP DATABASE COLLEGE`
+- Complexity: *O(1)*
 
 ### 7. Connect to a Database
 
-- **Format:** `CONNECT DATABASE database`
-- **Example:** `CONNECT DATABASE COLLEGE`
-- **Complexity:** *O(1)*
+- Format: `CONNECT DATABASE database`
+- Example: `CONNECT DATABASE COLLEGE`
+- Complexity: *O(1)*
 
 ### 8. Disconnect
 >To disconnect from a database
-- **Format:** `DISCONNECT`
-- **Complexity:** *O(1)*
+- Format: `DISCONNECT`
+- Complexity: *O(1)*
 
 ### 9. List Databases
 >To list all the databases in the system
-- **Format:** `LIST DATABASES`
-- **Complexity:** *O(1)*
+- Format: `LIST DATABASES`
+- Complexity: *O(1)*
 
 ##  DDL - Database Commands (Data Definition Language)
 <span style="font-size:larger;">This is a subset of SQL used for defining and managing the structure of a database, including creating, modifying, and deleting database objects like tables.<br>You need to be connected to a database to run these commands</span>
 
 ### 1. Create Table
 
-- **Format:** `CREATE TABLE table (column/data type/constraint, ... )`
-- **Example:** `CREATE TABLE STUDENTS (ID/INT/PK, NAME/STRING/REQUIRED, CITY/STRING, AGE/INT, EMAIL/STRING/UINIQUE)`
-- **Complexity:** *O(C)*
+- Format: `CREATE TABLE table (column/data type/constraint, ... )`
+- Example: `CREATE TABLE STUDENTS (ID/INT/PK, NAME/STRING/REQUIRED, CITY/STRING, AGE/INT, EMAIL/STRING/UINIQUE)`
+- Complexity: *O(C)*
    - **C**: is the number of columns in the table
-- **Constraints**
+- Constraints
    - Primary Key (PK)
    - Foreign Key (FK) Still Yet to be Integrated
    - Unique
@@ -80,15 +80,15 @@
 
 ### 2. Drop Table
 
-- **Format:** `DROP TABLE table`
-- **Example:** `DROP TABLE STUDENTS`
-- **Complexity:** *O(1)*
+- Format: `DROP TABLE table`
+- Example: `DROP TABLE STUDENTS`
+- Complexity: *O(1)*
 
 ### 3. Truncate Table
 
-- **Format:** `TRUNCATE TABLE table`
-- **Example:** `TRUNCATE TABLE STUDENTS`
-- **Complexity:** *O(1)*
+- Format: `TRUNCATE TABLE table`
+- Example: `TRUNCATE TABLE STUDENTS`
+- Complexity: *O(1)*
 
 ### 4. Add Column
 
@@ -96,15 +96,15 @@
 
 ### 5. Drop Column
 
-- **Format:** `DROP COLUMN table, column`
-- **Example:** `DROP COLUMN STUDENTS, AGE`
-- **Complexity:** *O(N)*
-   - **N**: is the number of rows in the table
+- Format: `DROP COLUMN table, column`
+- Example: `DROP COLUMN STUDENTS, AGE`
+- Complexity: *O(N)*
+   - N: is the number of rows in the table
 
 ### 6. List Tables
 >To list all the tables in the database
-- **Format:** `LIST TABLES`
-- **Complexity:** *O(1)*
+- Format: `LIST TABLES`
+- Complexity: *O(1)*
 
 ##  DML - Table Commands (Data Manipulation Language)
 <span style="font-size:larger;">This is a subset of SQL used for interacting with and manipulating data stored in a database.<br>
@@ -112,29 +112,29 @@ You need to be connected to a database to run these commands</span>
 
 ### 1. Insert Command
 
-- **Format:** `INSET INTO table VALUES [COLUMN1=value, ...]`
-- **Example:** `INSERT INTO STUDENTS VALUES  [ID=1, NAME=Ali, CITY= Cairo, AGE=24]`
-- **Complexity:** *O(N.C)*
+- Format: `INSET INTO table VALUES [COLUMN1=value, ...]`
+- Example: `INSERT INTO STUDENTS VALUES  [ID=1, NAME=Ali, CITY= Cairo, AGE=24]`
+- Complexity: *O(N.C)*
 
 ### 2. Delete Command
 
-- **Format:** `DELETE FROM table WHERE COLUMN1=(value)`
-- **Example:** `DELETE FROM STUDENTS WHERE NAME=(Aly)`
-- **Complexity:** *O(N)*
+- Format: `DELETE FROM table WHERE COLUMN1=(value)`
+- Example: `DELETE FROM STUDENTS WHERE NAME=(Aly)`
+- Complexity: *O(N)*
 
 ### 3. Update Command
 
-- **Format:** `UPDATE table SET [COLUMN1=value, ...] WHERE COLUMN=(value)`
-- **Example:** `UPDATE STUDENTS SET [AGE=25, NAME=Samy, CITY= ] WHERE NAME = (Bassam)`
+- Format: `UPDATE table SET [COLUMN1=value, ...] WHERE COLUMN=(value)`
+- Example: `UPDATE STUDENTS SET [AGE=25, NAME=Samy, CITY= ] WHERE NAME = (Bassam)`
    `UPDATE STUDENTS SET [CITY=Cairo]`
-- **Complexity:** *O(N.C)*
+- Complexity: *O(N.C)*
 
 ### 4. Select Command
 
-- **Format:** `SELECT COLUMN1, COLUMN2, ... FROM table WHERE COLUMN=(value)`
-- **Example:** `SELECT NAME, AGE, ID FROM STUDENTS WHERE NAME = (Aly)` 
+- Format: `SELECT COLUMN1, COLUMN2, ... FROM table WHERE COLUMN=(value)`
+- Example: `SELECT NAME, AGE, ID FROM STUDENTS WHERE NAME = (Aly)` 
 `SELECT * FROM STUDENTS`
-- **Complexity:** *O(N)*
+- Complexity: *O(N)*
 
 <br><br>
 # Usage
@@ -156,9 +156,9 @@ You need to be connected to a database to run these commands</span>
    ```bash
    ./BSQL.bash >filename
    ```
+Example
    ```
-      Example 
-         > ./BSQL.bash script
-      In the script file write your BSQL Commands each command in a single line 
-      and you can use "#" For comments.
+   ./BSQL.bash script
    ```
+In the script file write your BSQL Commands each command in a single line 
+and you can use "#" For comments.
