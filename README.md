@@ -136,6 +136,20 @@ You need to be connected to a database to run these commands</span>
 `SELECT * FROM STUDENTS`
 - Complexity: *O(N)*
 
+## Other Commands
+
+### 1. Exit
+Used to exit the application
+- Format: `EXIT`
+- Complexity: *O(1)*
+
+### 2. Clear
+Used to clear the application's terminal
+- Format: `CLEAR`
+- Complexity: *O(1)*
+
+ ### USE # FOR COMMENTS
+
 <br><br>
 # Usage
 <span style="font-size:larger;">To use Bash DBMS, follow these steps:</span>
