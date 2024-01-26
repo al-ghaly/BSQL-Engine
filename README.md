@@ -69,7 +69,7 @@
 ### 1. Create Table
 
 - Format: `CREATE TABLE table (column/data type/constraint, ... )`
-- Example: `CREATE TABLE STUDENTS (ID/INT/PK, NAME/STRING/REQUIRED, CITY/STRING, AGE/INT, EMAIL/STRING/UINIQUE)`
+- Example: `CREATE TABLE STUDENTS (ID/INT/PK, NAME/STRING/REQUIRED, CITY/STRING, AGE/INT, EMAIL/STRING/UNIQUE)`
 - Complexity: *O(C)*
    - **C**: is the number of columns in the table
 - Constraints
@@ -176,3 +176,10 @@ Example
    ```
 In the script file write your BSQL Commands each command in a single line 
 and you can use "#" For comments.
+<hr>
+### Live Demo
+
+
+https://github.com/al-ghaly/BSQL-Engine/assets/61648960/2d698888-98ff-448f-baac-4f6d85e281f5
+
+
