@@ -1,0 +1,85 @@
+-------------------------------------------------------------------------------------
+RANDA:
+	COLUMN FAMILIES:
+		- BLOOM FILTER 10
+		- ROWCOL
+		- BLOCK SIZE
+	PERFECT DESIGN
+
+	- 16 SPLITS
+	- Hashed Value: SALT
+	- ROWKEY: REVERSED
+	- SALTING: SAME DOMAIN: SAME SALT
+	- MD5: 
+	- Secondary index (researched but not used) 
+	- lookup table
+	- Apache Pheonix
+	- Tall wide vs flat wide 
+	- Quick retrive of rows 
+	- Spliting: manually specifying spletting entries	
+-------------------------------------------------------------------------------------
+Doaa:
+	- Why does HMaster depends on Master node: 3ady
+	- Why are Region Servers away from Data Node
+	- last second Optimizations => failed => HBS el snin wrbna
+		- Single command to copy multiple files is way better that separate commands!
+		- Ktfm el projects el tanya wrbna 
+	- HABD In bash too
+	- Wdeny Habd el 3omr 
+	- A7a btsleep infinity in Dockerfile entry poiut:
+		- Why => to sleep infinity
+	- The answer to every thing is => ngrb
+	- ZooKeeper with HMaster or NameNode => Does not know
+	- m4 3amla volume (5 times) don't know why is it crucial
+	- Formats the Name node upon start up
+-------------------------------------------------------------------------------------	
+Yomna Fahma Fa54
+-------------------------------------------------------------------------------------
+Hager
+	- Hzar Bas
+-------------------------------------------------------------------------------------
+Mo3az:
+	- No need for data node 
+	- Day3 5als
+	- no schema design
+-------------------------------------------------------------------------------------
+Heikel: 
+	Way Below Average
+	- Asynch vs Sync => habd bs
+	- too nervious
+	- Node Manager with Data node => because yousef etman said
+	- Data Node with RS => bad but had to because of resources => Habd
+	- Web table schema => shit
+-------------------------------------------------------------------------------------
+Sakr:
+	- Best of them
+	- Software Engineer
+	- High availability failed
+	-	
+	-	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
